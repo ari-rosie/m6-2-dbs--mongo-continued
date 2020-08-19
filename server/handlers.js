@@ -68,13 +68,20 @@ const getSeats = async (req, res) => {
 };
 
 const bookSeat = async (req, res) => {
-  const { seatId } = req.body;
-  //   if (!creditCard || !expiration) {
-  //     return res.status(400).json({
-  //       status: 400,
-  //       message: "Please provide credit card information!",
-  //     });
-  //   }
+  const { seatId, creditCard, expiration, fullName, email } = req.body;
+  if (!creditCard || !expiration) {
+    return res.status(400).json({
+      status: 400,
+      message: "Please provide credit card information!",
+    });
+  }
+
+  if (!fullName || !email) {
+    return res.status(400).json({
+      status: 400,
+      message: "Please provide your name and email!",
+    });
+  }
 
   try {
     const client = await MongoClient(MONGO_URI, options);
@@ -92,7 +99,12 @@ const bookSeat = async (req, res) => {
           } else {
             const bookedSeat = await db
               .collection("seats")
-              .updateOne({ _id: seatId }, { $set: { isBooked: true } });
+              .updateOne(
+                { _id: seatId },
+                {
+                  $set: { isBooked: true, passenger: fullName, contact: email },
+                }
+              );
             assert.equal(1, bookedSeat.matchedCount);
             assert.equal(1, bookedSeat.modifiedCount);
 
