@@ -10,41 +10,6 @@ const options = {
   useUnifiedTopology: true,
 };
 
-// let state;
-// if (!state) {
-//     state = {
-//       bookedSeats: randomlyBookSeats(30),
-//     };
-//   }
-
-let lastBookingAttemptSucceeded = false;
-
-const NUM_OF_ROWS = 8;
-const SEATS_PER_ROW = 12;
-
-// ----------------------------------
-//////// HELPERS
-const getRowName = (rowIndex) => {
-  return String.fromCharCode(65 + rowIndex);
-};
-
-const randomlyBookSeats = (num) => {
-  const bookedSeats = {};
-
-  while (num > 0) {
-    const row = Math.floor(Math.random() * NUM_OF_ROWS);
-    const seat = Math.floor(Math.random() * SEATS_PER_ROW);
-
-    const seatId = `${getRowName(row)}-${seat + 1}`;
-
-    bookedSeats[seatId] = true;
-
-    num--;
-  }
-
-  return bookedSeats;
-};
-
 const getSeats = async (req, res) => {
   try {
     const client = await MongoClient(MONGO_URI, options);
@@ -97,14 +62,12 @@ const bookSeat = async (req, res) => {
               .status(400)
               .json({ message: "This seat has already been booked!" });
           } else {
-            const bookedSeat = await db
-              .collection("seats")
-              .updateOne(
-                { _id: seatId },
-                {
-                  $set: { isBooked: true, passenger: fullName, contact: email },
-                }
-              );
+            const bookedSeat = await db.collection("seats").updateOne(
+              { _id: seatId },
+              {
+                $set: { isBooked: true, passenger: fullName, contact: email },
+              }
+            );
             assert.equal(1, bookedSeat.matchedCount);
             assert.equal(1, bookedSeat.modifiedCount);
 
